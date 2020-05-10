@@ -110,7 +110,7 @@ class FileTemplate(object):
         self.actions = [] # each entry is tuple of
                           # (relative path, source last-modified-time, mode)
         if self.recursive:
-            def visit(ignored, dirname, names):
+            for root, dirname, names in os.walk(self.source_dir):
                 relative_prefix = dirname[len(self.source_dir)+1:]
                 if relative_prefix in self.exclude_dirs:
                     # exclude current directory and its subdirectories
@@ -118,7 +118,7 @@ class FileTemplate(object):
                     return
                 file_info = {}
                 for name in names:
-                    val = os.path.join(relative_prefix, name)
+                    val = os.path.join(root, name)
                     source = os.path.join(self.source_dir, val)
                     statinfo = os.stat(source)
                     last_modified = statinfo.st_mtime
@@ -142,8 +142,6 @@ class FileTemplate(object):
                         found.update(matching)
                 for name in found:
                     self.actions.append(file_info[name])
-            os.path.walk(
-                self.source_dir, visit, None)
         else:
             for val in source_patterns:
                 source = zc.buildout.easy_install.realpath(
